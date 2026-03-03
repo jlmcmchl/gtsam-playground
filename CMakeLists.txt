@@ -76,6 +76,8 @@ set(WITH_TESTS OFF)
 set(WITH_WPILIB ON)
 set(NO_WERROR ON)
 set(WITH_PROTOBUF OFF)
+set(WITH_CSCORE OFF)
+set(WITH_GUI OFF)
 set(USE_SYSTEM_EIGEN ON) # use the same eigen that we're using for gtsam, just so we're using the same exact eigen everywhere
 
 
@@ -86,7 +88,7 @@ if(WPILIB_DIR STREQUAL "")
   FetchContent_Declare(
     allwpilib
     GIT_REPOSITORY https://github.com/wpilibsuite/allwpilib
-    GIT_TAG        refs/tags/v2025.3.2
+    GIT_TAG        refs/tags/v2026.2.1
     GIT_SHALLOW 1
     EXCLUDE_FROM_ALL
   )
