@@ -88,7 +88,11 @@ void Localizer::AddOdometry(OdometryObservation odom) {
 
   // And get initial guess just by composing previous pose
   wTb_latest = wTb_latest.transformPoseFrom(poseDelta);
-  currentEstimate.insert(newStateIdx, wTb_latest);
+  try {
+    currentEstimate.insert(newStateIdx, wTb_latest);
+  } catch (const std::exception& e) {
+    fmt::println("Error inserting new state. Key: {}, Time: {}, Error: {}", newStateIdx, timeUs, e.what());
+  }
 
   newTimestamps[newStateIdx] = timeUs;
   // twistsFromPreviousKey[newStateIdx] = poseDelta;

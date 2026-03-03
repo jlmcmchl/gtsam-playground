@@ -92,6 +92,8 @@ public:
 
     // don't need to wait on this because there's a hardcoded default in TagModel
     if (const auto layout = configListener.NewTagLayout()) {
+      fmt::println("Got new tag layout");
+
       TagModel::SetLayout(*layout);
 
       // Reset initial guess tracking since we got a new layout and our factors
