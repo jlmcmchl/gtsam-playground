@@ -1,0 +1,32 @@
+{
+  "rootTableName": "/opi_gtsam_localizer",
+  "ntServerURI": "10.35.38.2",
+  "cameras": [
+    {
+      "subtableName": "Front Left",
+      "pixelNoise": 10
+    },
+    {
+      "subtableName": "Front Right",
+      "pixelNoise": 10
+    },
+    {
+      "subtableName": "Back Left",
+      "pixelNoise": 10
+    },
+    {
+      "subtableName": "Back Right",
+      "pixelNoise": 10
+    }
+  ],
+  "rotNoise": [
+    0.0087263889,
+    0.0087263889,
+    0.0087263889
+  ],
+  "transNoise": [
+    0.004,
+    0.004,
+    0.004
+  ]
+}
