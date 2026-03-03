@@ -1,0 +1,64 @@
+# x86_64 Docker image for gtsam-playground with full cross-compilation setup
+# Follows README cross-compilation instructions to a T
+# Produces arm64 binaries via x86_64->arm64 cross-compilation
+
+FROM --platform=linux/amd64 debian:bookworm-slim
+
+# Base build tools + utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    ninja-build \
+    mold \
+    git \
+    jq \
+    file \
+    wget \
+    curl \
+    ca-certificates \
+    unzip \
+    zip \
+    xz-utils \
+    gzip \
+    tar \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Cross-compilation setup per README
+ARG WORK=/workspace
+WORKDIR ${WORK}
+
+# Download and extract arm64 cross-compiler toolchain
+RUN wget -q "https://github.com/wpilibsuite/opensdk/releases/download/v2025-1/arm64-bookworm-2025-x86_64-linux-gnu-Toolchain-12.2.0.tgz" \
+    && tar xf arm64-bookworm-2025-x86_64-linux-gnu-Toolchain-12.2.0.tgz \
+    && rm arm64-bookworm-2025-x86_64-linux-gnu-Toolchain-12.2.0.tgz
+
+RUN mkdir -p prefix
+
+# Clone and build OpenCV for arm64 (cross-compiled)
+RUN git clone https://github.com/opencv/opencv -b 4.11.0 --depth 1 \
+    && cd opencv && mkdir build && cd build \
+    && cmake .. \
+        -GNinja \
+        -DCMAKE_TOOLCHAIN_FILE=${WORK}/bookworm/toolchain-config.cmake \
+        -DCMAKE_INSTALL_PREFIX=${WORK}/prefix \
+        -DBUILD_SHARED_LIBS=off \
+        -DBUILD_opencv_ml=OFF \
+        -DBUILD_opencv_objdetect=off \
+        -DBUILD_opencv_dnn=off \
+        -DBUILD_opencv_apps=off \
+        -DBUILD_TESTS=off \
+        -DBUILD_PERF_TESTS=off \
+        -DWITH_PROTOBUF=OFF \
+    && ninja -j$(nproc) install \
+    && cd ${WORK} && rm -rf opencv
+
+COPY docker/build-x86_64.sh /usr/local/bin/build-gtsam.sh
+RUN chmod +x /usr/local/bin/build-gtsam.sh
+
+# /workspace/gtsam-playground will be mounted at runtime
+# prefix and bookworm remain in the image for builds
+ENV WORK=${WORK}
+WORKDIR ${WORK}
+
+ENTRYPOINT ["/usr/local/bin/build-gtsam.sh"]

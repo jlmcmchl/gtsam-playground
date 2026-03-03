@@ -1,0 +1,86 @@
+# arm64 Docker image for gtsam-playground (native build)
+# Skips cross-compiler setup - uses native toolchain
+# Builds OpenCV from source per README (no remote/system dependency)
+
+FROM --platform=linux/arm64 ubuntu:24.04
+
+
+RUN apt-get clean && apt-get update && apt-get install -y apt-transport-https \
+    ca-certificates \
+    gnupg \
+    software-properties-common \
+    wget && \
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null && \
+    echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ noble main' > /etc/apt/sources.list.d/kitware.list && \
+    add-apt-repository ppa:git-core/ppa && \
+    apt-get update && apt-get install -y tzdata && apt-get install -y \
+    build-essential \
+    ca-certificates \
+    clang-format-14 \
+    cmake \
+    curl \
+    fakeroot \
+    g++ --no-install-recommends \
+    gcc \
+    gdb \
+    gfortran \
+    git \
+    java-common \
+    libc6-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    libisl-dev \
+    libopencv-dev \
+    libopencv-java \
+    libvulkan-dev \
+    libx11-dev \
+    libxcursor-dev \
+    libxi-dev \
+    libxinerama-dev \
+    libxrandr-dev \
+    make \
+    mesa-common-dev \
+    openjdk-17-jdk \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
+    sudo \
+    unzip \
+    wget \
+    zip \
+    ninja-build \
+    mold \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+# Build OpenCV from source per README (native build, no toolchain)
+ARG WORK=/workspace
+WORKDIR ${WORK}
+RUN mkdir -p prefix \
+    && git clone https://github.com/opencv/opencv -b 4.11.0 --depth 1 \
+    && cd opencv && mkdir build && cd build \
+    && cmake .. \
+        -GNinja \
+        -DCMAKE_INSTALL_PREFIX=${WORK}/prefix \
+        -DBUILD_SHARED_LIBS=off \
+        -DBUILD_opencv_ml=OFF \
+        -DBUILD_opencv_objdetect=off \
+        -DBUILD_opencv_dnn=off \
+        -DBUILD_opencv_apps=off \
+        -DBUILD_TESTS=off \
+        -DBUILD_PERF_TESTS=off \
+        -DWITH_PROTOBUF=OFF \
+        -DWITH_OPENEXR=OFF \
+    && ninja -j$(nproc) install \
+    && cd ${WORK} && rm -rf opencv
+
+COPY docker/build-arm64.sh /usr/local/bin/build-gtsam.sh
+COPY docker/run-arm64.sh /usr/local/bin/run-gtsam.sh
+RUN chmod +x /usr/local/bin/build-gtsam.sh /usr/local/bin/run-gtsam.sh
+
+# /workspace/gtsam-playground will be mounted at runtime
+ENV WORK=/workspace
+WORKDIR ${WORK}
+
+ENTRYPOINT ["/usr/local/bin/build-gtsam.sh"]

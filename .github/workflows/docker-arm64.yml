@@ -1,0 +1,38 @@
+name: Docker arm64 (Native)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/docker-arm64.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm  # ARM64 runner for native build
+    name: Build in arm64 container (native)
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build Docker image
+        run: docker build -f docker/Dockerfile.arm64 -t gtsam-playground:arm64 .
+
+      - name: Build gtsam-playground (native)
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace/gtsam-playground" \
+            gtsam-playground:arm64
+
+      - name: Upload export artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtsam-playground-arm64-native-export
+          path: export/

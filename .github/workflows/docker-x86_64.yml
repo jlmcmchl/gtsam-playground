@@ -1,0 +1,38 @@
+name: Docker x86_64 (Cross-compilation)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/docker-x86_64.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build in x86_64 container (cross-compile to arm64)
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build Docker image
+        run: docker build -f docker/Dockerfile.x86_64 -t gtsam-playground:x86_64 .
+
+      - name: Build gtsam-playground (cross-compile)
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace/gtsam-playground" \
+            gtsam-playground:x86_64
+
+      - name: Upload export artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtsam-playground-arm64-export
+          path: export/
