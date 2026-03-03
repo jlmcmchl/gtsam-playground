@@ -88,8 +88,8 @@ void DataPublisher::Update() {
     static int i;
     i++;
 
-    if (i % 3 == 2)
-      trajectoryHistoryPub.Set(localizer->GetPoseHistory());
+    // if (i % 3 == 2)
+    //   trajectoryHistoryPub.Set(localizer->GetPoseHistory());
   }
 }
 
