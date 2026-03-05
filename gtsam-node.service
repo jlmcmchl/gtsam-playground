@@ -1,0 +1,15 @@
+[Unit]
+Description=GTSAM Meme incarnate
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi
+ExecStart=/home/pi/gtsam-node /home/pi/3538_beta.json
+Nice=-10
+AllowedCPUs=1
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
